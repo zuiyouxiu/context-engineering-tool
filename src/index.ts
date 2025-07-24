@@ -10,110 +10,35 @@ import { existsSync, promises as fs } from "fs";
 import * as path from "path";
 import { z } from "zod";
 
-// 导入新的核心模块
-import { DynamicContextBuilder } from './core/context-builder.js';
-import { MemoryManager } from './core/memory-manager.js';
-import { MultiSourceIntegrator } from './core/multi-source-integrator.js';
-import { ContextQualityChecker } from './core/quality-checker.js';
-import { IntelligentFormatter } from './services/intelligent-formatter.js';
-
-// 导入类型定义
-import {
-  ContextPackage,
-  TaskType,
-  Priority,
-  MultiSourceConfig,
-  DecisionRecord,
-  PatternRecord
-} from './types/context-types.js';
+// 导入精简的核心上下文工程工具
+import { registerCoreContextEngineeringTools } from './tools/core-mcp-tools.js';
 
 // 工具函数
 import { normalizePath, formatTimestamp } from './utils/path-utils.js';
 import { getContextEngineeringTemplates, getDetailedFileGuide } from './legacy/context-templates.js';
 
-// 默认配置
-const DEFAULT_CONFIG: MultiSourceConfig = {
-  sources: {
-    projectFiles: true,
-    conversationHistory: true,
-    userProfile: true,
-    knowledgeBase: true,
-    externalAPIs: true
+// 上下文工程核心理念实现
+const CONTEXT_ENGINEERING_FORMULA = {
+  components: {
+    prompts: '动态提示词生成',
+    userPreferences: '用户偏好学习',
+    memory: '记忆管理系统',
+    retrieval: '信息检索',
+    tools: 'MCP工具调用'
   },
-  weights: {
-    recency: 0.3,
-    relevance: 0.4,
-    userPreference: 0.2,
-    projectImportance: 0.1
-  },
-  limits: {
-    maxHistoryItems: 20,
-    maxKnowledgeItems: 10,
-    maxContextSize: 50000
-  }
+  implementation: 'file-system-based' // 基于文件系统的可行实现
 };
 
-// 外部工具接口适配器
-class ExternalToolAdapter {
-  constructor(private toolProvider?: any) {}
-
-  async webSearch(query: string): Promise<any[]> {
-    // 这里可以集成AI编程工具的网络搜索功能
-    if (this.toolProvider?.webSearch) {
-      return await this.toolProvider.webSearch(query);
-    }
-    return [];
-  }
-
-  async codeIndexSearch(query: string, language?: string): Promise<any[]> {
-    // 这里可以集成AI编程工具的代码索引搜索功能
-    if (this.toolProvider?.codeIndexSearch) {
-      return await this.toolProvider.codeIndexSearch(query, language);
-    }
-    return [];
-  }
-
-  async fileSearch(pattern: string, rootPath: string): Promise<any[]> {
-    // 这里可以集成AI编程工具的文件搜索功能
-    if (this.toolProvider?.fileSearch) {
-      return await this.toolProvider.fileSearch(pattern, rootPath);
-    }
-    return [];
-  }
-
-  async libraryDocSearch(libraryName: string, topic?: string): Promise<any[]> {
-    // 这里可以集成context7的第三方库文档查询功能
-    if (this.toolProvider?.libraryDocSearch) {
-      return await this.toolProvider.libraryDocSearch(libraryName, topic);
-    }
-    return [];
-  }
-}
-
 // 服务器创建函数
-const getServer = (externalToolProvider?: any) => {
+const getServer = () => {
   const server = new McpServer({
     name: "context-engineering-tool",
-    version: "2.0.0",
-    description: "上下文工程管理工具 v2.0 - 基于上下文工程理念的智能项目管理系统，支持多源信息整合、动态上下文构建和质量评估"
+    version: "3.0.0",
+    description: "上下文工程管理工具 v3.0 - 智能提示词构造+持久化记忆管理"
   });
 
-  // 全局组件初始化
-  let memoryManager: MemoryManager;
-  let multiSourceIntegrator: MultiSourceIntegrator;
-  let contextBuilder: DynamicContextBuilder;
-  let qualityChecker: ContextQualityChecker;
-  let formatter: IntelligentFormatter;
-  let externalTools: ExternalToolAdapter;
-
-  const initializeComponents = (projectRoot: string) => {
-    memoryManager = new MemoryManager(projectRoot);
-    externalTools = new ExternalToolAdapter(externalToolProvider);
-    multiSourceIntegrator = new MultiSourceIntegrator(DEFAULT_CONFIG, projectRoot, externalTools);
-    qualityChecker = new ContextQualityChecker();
-    contextBuilder = new DynamicContextBuilder(DEFAULT_CONFIG, memoryManager, multiSourceIntegrator, qualityChecker);
-    formatter = new IntelligentFormatter();
-  };
+  // 注册核心上下文工程工具（精简的3个工具）
+  registerCoreContextEngineeringTools(server);
 
   // 生成记忆文件模板
   const getMemoryFileTemplate = (fileName: string): string => {
@@ -258,254 +183,11 @@ const getServer = (externalToolProvider?: any) => {
     }
   };
 
-  // 新工具：动态上下文构建
-  server.tool(
-    "build-dynamic-context",
-    `动态构建任务上下文 - 上下文工程的核心功能
-实现多源信息整合：项目文件 + 用户偏好 + 记忆 + 网络搜索 + 代码索引 + 库文档
-自动评估上下文质量，确保LLM能在当前上下文下完成任务`,
-    {
-      rootPath: z.string().describe(
-        `项目根目录路径
-Windows示例: "C:/Users/name/project" 
-macOS/Linux示例: "/home/name/project"`
-      ),
-      taskType: z
-        .enum(['architecture', 'feature', 'bugfix', 'refactor', 'decision', 'progress', 'general'])
-        .describe("任务类型，用于优化上下文构建策略"),
-      userInput: z.string().describe("用户输入的具体需求或问题"),
-      priority: z
-        .enum(['high', 'medium', 'low'])
-        .optional()
-        .describe("任务优先级，默认为medium"),
-      sessionId: z.string().optional().describe("会话ID，用于维持上下文连续性")
-    },
-    async ({ rootPath, taskType, userInput, priority = 'medium', sessionId }) => {
-      try {
-        const normalizedPath = normalizePath(rootPath);
-        initializeComponents(normalizedPath);
 
-        const actualSessionId = sessionId || `session-${Date.now()}`;
-        
-        // 构建动态上下文
-        const contextPackage = await contextBuilder.buildContext(
-          taskType as TaskType,
-          userInput,
-          priority as Priority,
-          actualSessionId
-        );
-
-        // 记录对话到记忆系统
-        await memoryManager.recordConversation(
-          actualSessionId,
-          userInput,
-          '动态上下文已构建',
-          { taskType, priority },
-          []
-        );
-
-        // 格式化输出
-        const formattedContext = formatter.formatContextPackage(contextPackage);
-
-        return {
-          content: [
-            {
-              type: "text",
-              text: formattedContext
-            }
-          ]
-        };
-
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `动态上下文构建失败: ${error instanceof Error ? error.message : String(error)}`
-            }
-          ]
-        };
-      }
-    }
-  );
-
-  // 新工具：记忆管理
-  server.tool(
-    "manage-memory",
-    `记忆管理 - 上下文工程的记忆维度
-管理短期记忆（对话历史、操作记录）和长期记忆（用户偏好、学习进度）
-支持记忆检索、更新和清理`,
-    {
-      rootPath: z.string().describe("项目根目录路径"),
-      action: z.enum(['get-short-term', 'get-long-term', 'update-preferences', 'cleanup', 'export']).describe("记忆管理操作"),
-      sessionId: z.string().optional().describe("会话ID"),
-      data: z.any().optional().describe("更新数据（当action为update-preferences时使用）")
-    },
-    async ({ rootPath, action, sessionId, data }) => {
-      try {
-        const normalizedPath = normalizePath(rootPath);
-        initializeComponents(normalizedPath);
-
-        const actualSessionId = sessionId || `session-${Date.now()}`;
-        let result: any = {};
-
-        switch (action) {
-          case 'get-short-term':
-            result = await memoryManager.getShortTermMemory(actualSessionId);
-            break;
-          case 'get-long-term':
-            result = await memoryManager.getLongTermMemory();
-            break;
-          case 'update-preferences':
-            if (data) {
-              await memoryManager.updateUserPreferences(data);
-              result = { success: true, message: "用户偏好已更新" };
-            } else {
-              result = { success: false, message: "缺少更新数据" };
-            }
-            break;
-          case 'cleanup':
-            await memoryManager.cleanupShortTermMemory();
-            result = { success: true, message: "短期记忆已清理" };
-            break;
-          case 'export':
-            result = await memoryManager.exportMemoryData();
-            break;
-        }
-
-        return {
-          content: [
-            {
-              type: "text",
-              text: `# 记忆管理结果\n\n**操作**: ${action}\n**结果**:\n\`\`\`json\n${JSON.stringify(result, null, 2)}\n\`\`\``
-            }
-          ]
-        };
-
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `记忆管理操作失败: ${error instanceof Error ? error.message : String(error)}`
-            }
-          ]
-        };
-      }
-    }
-  );
-
-  // 新工具：外部知识检索
-  server.tool(
-    "retrieve-external-knowledge",
-    `外部知识检索 - 整合AI编程工具的外部功能
-支持网络搜索、代码索引搜索、文件搜索、第三方库文档查询
-自动格式化结果供LLM理解`,
-    {
-      rootPath: z.string().describe("项目根目录路径"),
-      query: z.string().describe("搜索查询"),
-      taskType: z.enum(['architecture', 'feature', 'bugfix', 'refactor', 'decision', 'progress', 'general']).describe("任务类型"),
-      sources: z.array(z.enum(['web', 'code', 'files', 'libraries'])).optional().describe("搜索源，默认为全部"),
-      sessionId: z.string().optional().describe("会话ID")
-    },
-    async ({ rootPath, query, taskType, sources = ['web', 'code', 'files', 'libraries'], sessionId }) => {
-      try {
-        const normalizedPath = normalizePath(rootPath);
-        initializeComponents(normalizedPath);
-
-        const actualSessionId = sessionId || `session-${Date.now()}`;
-        
-        // 格式化搜索查询
-        const searchQueries = formatter.formatSearchQuery(taskType as TaskType, query, {});
-        
-        const results: any = {};
-
-        // 并行执行多源搜索
-        const searchPromises: Promise<void>[] = [];
-
-        if (sources.includes('web')) {
-          searchPromises.push(
-            externalTools.webSearch(searchQueries.webSearch).then(res => {
-              results.webResults = res;
-            })
-          );
-        }
-
-        if (sources.includes('code')) {
-          searchPromises.push(
-            externalTools.codeIndexSearch(searchQueries.codeSearch).then(res => {
-              results.codeResults = res;
-            })
-          );
-        }
-
-        if (sources.includes('files')) {
-          searchPromises.push(
-            externalTools.fileSearch(query, normalizedPath).then(res => {
-              results.fileResults = res;
-            })
-          );
-        }
-
-        if (sources.includes('libraries') && searchQueries.librarySearch.length > 0) {
-          searchPromises.push(
-            Promise.all(
-              searchQueries.librarySearch.map(lib => 
-                externalTools.libraryDocSearch(lib, query)
-              )
-            ).then(res => {
-              results.libraryResults = res.flat();
-            })
-          );
-        }
-
-        await Promise.all(searchPromises);
-
-        // 格式化结果
-        const formattedResults = formatter.formatExternalResults(results);
-
-        // 记录搜索操作
-        await memoryManager.recordAction(actualSessionId, {
-          id: '',
-          timestamp: new Date().toISOString(),
-          action: 'retrieve-external-knowledge',
-          parameters: { query, taskType, sources },
-          result: {
-            totalResults: Object.values(results).reduce((sum: number, arr: any) => 
-              sum + (Array.isArray(arr) ? arr.length : 0), 0)
-          },
-          duration: 0,
-          success: true,
-          contextImpact: 'External knowledge retrieved and integrated'
-        });
-
-        return {
-          content: [
-            {
-              type: "text",
-              text: `# 🔍 外部知识检索结果\n\n**查询**: ${query}\n**任务类型**: ${taskType}\n**搜索源**: ${sources.join(', ')}\n\n${formattedResults || '*未找到相关结果*'}`
-            }
-          ]
-        };
-
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `外部知识检索失败: ${error instanceof Error ? error.message : String(error)}`
-            }
-          ]
-        };
-      }
-    }
-  );
-
-  // 增强版现有工具：get-context-info
+  // 传统工具：get-context-info（保持兼容性）
   server.tool(
     "get-context-info",
-    `读取并返回所有上下文工程管理文件内容 - 增强版
-现在包含记忆管理和用户偏好信息
+    `读取并返回所有上下文工程管理文件内容
 在每个工作会话开始时使用此工具获取完整项目上下文`,
     {
       rootPath: z.string().describe(
@@ -518,9 +200,6 @@ macOS/Linux示例: "/home/name/project"`
     async ({ rootPath, sessionId }) => {
       try {
         const normalizedPath = normalizePath(rootPath);
-        initializeComponents(normalizedPath);
-
-        const actualSessionId = sessionId || `session-${Date.now()}`;
         const contextEngineeringPath = path.join(normalizedPath, "context-engineering");
 
         // 读取核心上下文文件
@@ -545,10 +224,6 @@ macOS/Linux示例: "/home/name/project"`
           coreContent = "[核心上下文文件不存在]";
         }
 
-        // 获取记忆信息
-        const shortTermMemory = await memoryManager.getShortTermMemory(actualSessionId);
-        const longTermMemory = await memoryManager.getLongTermMemory();
-
         // 格式化完整上下文
         const fullContext = `# 📋 完整项目上下文
 
@@ -556,28 +231,17 @@ macOS/Linux示例: "/home/name/project"`
 
 ${coreContent}
 
-## 🧠 记忆系统
-
-### 短期记忆 (当前会话)
-最近对话数量: ${shortTermMemory.length}
-${shortTermMemory.slice(0, 3).map(conv => 
-  `- [${new Date(conv.timestamp).toLocaleString()}] ${conv.userInput.substring(0, 50)}...`
-).join('\n')}
-
-### 长期记忆 (用户偏好)
-- 主要编程语言: ${longTermMemory.technicalPreferences?.primaryLanguages?.join(', ') || '未设置'}
-- 沟通风格: ${longTermMemory.communicationStyle?.responseLength || '标准'}
-- 成功模式: ${longTermMemory.learningProgress?.successPatterns?.slice(0, 3).join(', ') || '暂无'}
-
 ## 💡 使用建议
 
 1. 完成重要更改后，使用'update-context-engineering'获取更新指导
-2. 使用'build-dynamic-context'构建任务相关的智能上下文
-3. 使用'retrieve-external-knowledge'获取外部技术信息
-4. 保持所有上下文工程管理文件的一致性
+2. 使用新的核心上下文工程工具（精简的3个）：
+   - 'analyze-project-context': 分析项目技术栈并生成搜索指导
+   - 'build-contextual-prompt': 构建智能提示词（核心工具）
+   - 'manage-memory': 记忆管理（包含用户偏好学习）
+3. 保持所有上下文工程管理文件的一致性
 
 ---
-*此上下文包含项目核心信息和个性化记忆，支持智能上下文工程管理*`;
+*此上下文实现了上下文工程公式：提示词+用户偏好+记忆管理+信息检索+工具调用*`;
 
         return {
           content: [
@@ -1033,10 +697,10 @@ app.delete('/mcp', async (req: Request, res: Response) => {
 // 启动服务器
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 8389;
 app.listen(PORT, () => {
-  console.log(`🚀 上下文工程管理工具 v2.0 MCP 服务器已启动`);
+  console.log(`🚀 上下文工程管理工具 v3.0 MCP 服务器已启动 (精简3个核心工具)`);
   console.log(`📡 端口: ${PORT}`);
   console.log(`🔗 端点: http://localhost:${PORT}/mcp`);
-  console.log(`✨ 新功能: 动态上下文构建、记忆管理、外部知识检索`);
+  console.log(`✨ 核心理念: 充分利用AI工具内置能力+智能提示词构造+持久化记忆管理`);
 });
 
 // 优雅关闭
