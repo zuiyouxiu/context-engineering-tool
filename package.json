@@ -1,6 +1,6 @@
 {
   "name": "context-engineering-tool",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "bin": {
     "context-engineering-tool": "build/index.js"
   },
@@ -9,7 +9,15 @@
   ],
   "license": "MIT",
   "author": "Context Engineering Tool Contributors",
-  "description": "上下文工程管理工具 - 一个为AI辅助开发提供结构化项目上下文管理的MCP插件",
+  "description": "上下文工程管理工具 v2.0 - 基于上下文工程理念的智能项目管理系统，支持多源信息整合、动态上下文构建和质量评估",
+  "keywords": [
+    "context-engineering",
+    "mcp",
+    "ai-programming",
+    "project-management",
+    "memory-management",
+    "multi-source-integration"
+  ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.5.0",
     "zod": "^3.24.2",
@@ -18,12 +26,18 @@
   "devDependencies": {
     "@types/node": "^22.13.5",
     "@types/express": "^5.0.0",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "tsx": "^4.7.0"
   },
   "type": "module",
   "scripts": {
     "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
     "start": "node build/index.js",
-    "dev": "tsx index.ts"
+    "dev": "tsx src/index.ts",
+    "clean": "rm -rf build",
+    "test": "echo \"Tests will be added in future versions\" && exit 0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   }
 }
