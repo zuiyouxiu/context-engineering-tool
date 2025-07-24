@@ -1,15 +1,15 @@
 {
-  "name": "memory-bank-mcp",
+  "name": "context-engineering-tool",
   "version": "1.0.0",
   "bin": {
-    "memory-bank-mcp": "build/index.js"
+    "context-engineering-tool": "build/index.js"
   },
   "files": [
     "build"
   ],
   "license": "MIT",
-  "author": "Memory Bank MCP Contributors",
-  "description": "A guided Memory Bank MCP plugin for AI-assisted development with persistent project context",
+  "author": "Context Engineering Tool Contributors",
+  "description": "上下文工程管理工具 - 一个为AI辅助开发提供结构化项目上下文管理的MCP插件",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.5.0",
     "zod": "^3.24.2",

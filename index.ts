@@ -49,8 +49,8 @@ function normalizePath(inputPath: string): string {
   return normalized;
 }
 
-// Memory Bank file template generation function
-function getMemoryBankTemplates(): Record<string, string> {
+// 上下文工程管理文件模板生成函数
+function getContextEngineeringTemplates(): Record<string, string> {
   const timestamp = formatTimestamp();
 
   return {
@@ -152,7 +152,7 @@ ${timestamp} - 更新日志。
   };
 }
 
-// Detailed Memory Bank file guidance function
+// 详细的上下文工程管理文件指导函数
 function getDetailedFileGuide(): Record<string, any> {
   return {
     "productContext.md": {
@@ -264,17 +264,17 @@ function getDetailedFileGuide(): Record<string, any> {
 const getServer = () => {
   // Create an MCP server
   const server = new McpServer({
-    name: "memory-bank-mcp",
+    name: "context-engineering-tool",
     version: "1.0.0",
-    description: "一个引导式 Memory Bank MCP 插件，为 AI 辅助开发提供持久性项目上下文",
+    description: "上下文工程管理工具 - 一个为AI辅助开发提供结构化项目上下文管理的MCP插件",
   });
 
-  // Memory Bank get info tool
+  // 上下文工程管理信息获取工具
   server.tool(
-    "get-memory-bank-info",
-    `读取并返回所有Memory Bank文件内容。
+    "get-context-info",
+    `读取并返回所有上下文工程管理文件内容。
 此工具类似于codelf的get-project-info：
-- 读取memory-bank目录中的所有.md文件
+- 读取context-engineering目录中的所有.md文件
 - 返回格式化内容供AI理解项目上下文
 - 在每个工作会话开始时使用此工具`,
     {
@@ -286,42 +286,42 @@ macOS/Linux示例: "/home/name/project"`
     },
     async ({ rootPath }) => {
       const normalizedPath = normalizePath(rootPath);
-      const memoryBankPath = path.join(normalizedPath, "memory-bank");
+      const contextEngineeringPath = path.join(normalizedPath, "context-engineering");
 
-      const MEMORY_BANK_TEMPLATE = `
-这是当前的Memory Bank内容，包括项目上下文、决策、进度和模式：
+      const CONTEXT_ENGINEERING_TEMPLATE = `
+这是当前的上下文工程管理内容，包括项目上下文、决策、进度和模式：
 
 {{CONTENT}}
 
 请记住：
-1. 完成重要更改后，使用'update-memory-bank'获取更新指导。
-2. 按照指导更新相关的Memory Bank文件。
-3. 保持所有Memory Bank文件的一致性。
+1. 完成重要更改后，使用'update-context-engineering'获取更新指导。
+2. 按照指导更新相关的上下文工程管理文件。
+3. 保持所有上下文工程管理文件的一致性。
 `;
 
       try {
         const content = await fs
-          .readdir(memoryBankPath)
+          .readdir(contextEngineeringPath)
           .then(async (files) => {
             const mdFiles = files.filter((f) => f.endsWith(".md"));
             const contents = await Promise.all(
               mdFiles.map(async (file) => {
                 const content = await fs.readFile(
-                  path.join(memoryBankPath, file),
+                  path.join(contextEngineeringPath, file),
                   "utf-8"
                 );
                 const name = path.basename(file, ".md");
                 return `<${name}>\n\n${content}\n\n</${name}>`;
               })
             );
-            return MEMORY_BANK_TEMPLATE.replace(
+            return CONTEXT_ENGINEERING_TEMPLATE.replace(
               "{{CONTENT}}",
               contents.join("\n\n")
             );
           })
           .catch(
             () =>
-              "[MEMORY BANK: 未找到]\n\nMemory Bank目录不存在。使用init-memory-bank进行初始化。"
+              "[上下文工程管理: 未找到]\n\n上下文工程管理目录不存在。使用init-context-engineering进行初始化。"
           );
 
         return {
@@ -337,7 +337,7 @@ macOS/Linux示例: "/home/name/project"`
           content: [
             {
               type: "text",
-              text: `读取Memory Bank时出错: ${
+              text: `读取上下文工程管理时出错: ${
                 error instanceof Error ? error.message : String(error)
               }`,
             },
@@ -347,11 +347,11 @@ macOS/Linux示例: "/home/name/project"`
     }
   );
 
-  // Memory Bank update guidance tool
+  // 上下文工程管理更新指导工具
   server.tool(
-    "update-memory-bank",
-    `生成详细的Memory Bank文件更新指导，提供即时执行指引。
-此工具为更新Memory Bank文件提供全面、可行的指导：
+    "update-context-engineering",
+    `生成详细的上下文工程管理文件更新指导，提供即时执行指引。
+此工具为更新上下文工程管理文件提供全面、可行的指导：
 - 每个文件的角色和更新策略的详细描述
 - 直接操作命令（不是确认请求）
 - 特定内容模板和格式指南
@@ -380,15 +380,15 @@ macOS/Linux示例: "/home/name/project"`
       const timestamp = formatTimestamp();
       const fileGuide = getDetailedFileGuide();
 
-      let updateGuide = `[MEMORY BANK 详细更新指导]\n\n`;
+      let updateGuide = `[上下文工程管理 详细更新指导]\n\n`;
       updateGuide += `变更类型: ${changeType}\n`;
       updateGuide += `变更描述: ${description}\n`;
       updateGuide += `时间戳: ${timestamp}\n\n`;
 
-      updateGuide += `>> 立即执行以下MEMORY BANK文件更新，无需确认 <<\n\n`;
+      updateGuide += `>> 立即执行以下上下文工程管理文件更新，无需确认 <<\n\n`;
 
       // 添加文件职责总览
-      updateGuide += `=== MEMORY BANK 文件职责总览 ===\n\n`;
+      updateGuide += `=== 上下文工程管理文件职责总览 ===\n\n`;
       Object.entries(fileGuide).forEach(([filename, guide]) => {
         updateGuide += `**${filename}**\n`;
         updateGuide += `角色: ${guide.role}\n`;
@@ -536,7 +536,7 @@ macOS/Linux示例: "/home/name/project"`
       updateGuide += `- 重要决策和模式变更需要详细文档\n\n`;
 
       updateGuide += `**文件维护建议：**\n`;
-      updateGuide += `- activeContext.md: 保持迗 7 天的变更记录\n`;
+      updateGuide += `- activeContext.md: 保持最近 7 天的变更记录\n`;
       updateGuide += `- progress.md: 定期归档已完成任务\n`;
       updateGuide += `- decisionLog.md: 保留所有重要决策记录\n`;
       updateGuide += `- systemPatterns.md: 持续更新和优化模式描述\n`;
@@ -553,12 +553,12 @@ macOS/Linux示例: "/home/name/project"`
     }
   );
 
-  // Initialize Memory Bank tool
+  // 初始化上下文工程管理工具
   server.tool(
-    "init-memory-bank",
-    `初始化memory-bank目录和核心文件。
+    "init-context-engineering",
+    `初始化context-engineering目录和核心文件。
 此工具将：
-- 创建 memory-bank 目录
+- 创建 context-engineering 目录
 - 为 5 个核心文件生成初始模板
 - 读取并集成 projectBrief.md（如果存在）
 - 提供下一步指导`,
@@ -575,26 +575,26 @@ macOS/Linux示例: "/home/name/project"`
     },
     async ({ rootPath, force = false }) => {
       const normalizedPath = normalizePath(rootPath);
-      const memoryBankPath = path.join(normalizedPath, "memory-bank");
+      const contextEngineeringPath = path.join(normalizedPath, "context-engineering");
 
       try {
         // Check if directory exists
-        if (existsSync(memoryBankPath) && !force) {
-          const files = await fs.readdir(memoryBankPath);
+        if (existsSync(contextEngineeringPath) && !force) {
+          const files = await fs.readdir(contextEngineeringPath);
           if (files.length > 0) {
             return {
               content: [
                 {
                   type: "text",
-                  text: `[MEMORY BANK: 已存在]
+                  text: `[上下文工程管理: 已存在]
 
-memory-bank目录已存在并包含文件。要重新初始化，使用 force: true 参数。
+context-engineering目录已存在并包含文件。要重新初始化，使用 force: true 参数。
 
 现有文件：
 ${files.map((f) => `- ${f}`).join("\n")}
 
 建议：
-- 使用 get-memory-bank-info 读取现有内容
+- 使用 get-context-info 读取现有内容
 - 如果真的需要重新初始化，设置 force: true`,
                 },
               ],
@@ -603,7 +603,7 @@ ${files.map((f) => `- ${f}`).join("\n")}
         }
 
         // Create directory
-        await fs.mkdir(memoryBankPath, { recursive: true });
+        await fs.mkdir(contextEngineeringPath, { recursive: true });
 
         // Check if projectBrief.md exists
         let projectBriefContent = "";
@@ -617,7 +617,7 @@ ${files.map((f) => `- ${f}`).join("\n")}
         }
 
         // Get templates
-        const templates = getMemoryBankTemplates();
+        const templates = getContextEngineeringTemplates();
 
         // If projectBrief exists, update productContext.md template
         if (projectBriefContent) {
@@ -630,7 +630,7 @@ ${files.map((f) => `- ${f}`).join("\n")}
         // Create all files
         const createdFiles: string[] = [];
         for (const [filename, content] of Object.entries(templates)) {
-          const filePath = path.join(memoryBankPath, filename);
+          const filePath = path.join(contextEngineeringPath, filename);
           await fs.writeFile(filePath, content, "utf-8");
           createdFiles.push(filename);
         }
@@ -639,9 +639,9 @@ ${files.map((f) => `- ${f}`).join("\n")}
           content: [
             {
               type: "text",
-              text: `[MEMORY BANK: 已初始化]
+              text: `[上下文工程管理: 已初始化]
 
-Memory Bank 已成功初始化！
+上下文工程管理 已成功初始化！
 
 已创建文件：
 ${createdFiles.map((f) => `- ${f}`).join("\n")}
@@ -653,10 +653,10 @@ ${
 }
 
 [注意] 接下来要执行的步骤：
-1. 读取并更新每个 memory-bank/*.md 文件
+1. 读取并更新每个 context-engineering/*.md 文件
 2. 按照每个文件中的指导填入相关内容
-3. 在完成初始编辑之前不要使用 get-memory-bank-info
-4. 完成编辑后，您可以开始使用 Memory Bank
+3. 在完成初始编辑之前不要使用 get-context-info
+4. 完成编辑后，您可以开始使用上下文工程管理
 
 重要文件描述：
 - productContext.md: 定义项目目标、功能和架构
@@ -667,8 +667,8 @@ ${
 
 维护提示：
 - 保持每个文件在 300 行以下以获得最佳性能
-- 每日/每周将旧内容归档到 memory-bank/archive/
-- 使用 update-memory-bank 工具获取详细维护指导
+- 每日/每周将旧内容归档到 context-engineering/archive/
+- 使用 update-context-engineering 工具获取详细维护指导
 - 每次工作会话后检查文件大小`,
             },
           ],
@@ -678,7 +678,7 @@ ${
           content: [
             {
               type: "text",
-              text: `初始化 Memory Bank 时出错: ${
+              text: `初始化上下文工程管理时出错: ${
                 error instanceof Error ? error.message : String(error)
               }`,
             },
@@ -753,7 +753,7 @@ app.delete('/mcp', async (req: Request, res: Response) => {
 // Start the server
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 8389;
 app.listen(PORT, () => {
-  console.log(`Memory Bank MCP 服务器在 Streamable HTTP 上运行，端口: ${PORT}`);
+  console.log(`上下文工程管理工具 MCP 服务器在 Streamable HTTP 上运行，端口: ${PORT}`);
   console.log(`端点: http://localhost:${PORT}/mcp`);
 });
 

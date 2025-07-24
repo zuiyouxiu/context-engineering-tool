@@ -1,10 +1,10 @@
-# Memory Bank MCP
+# 上下文工程管理工具 (Context Engineering Tool)
 
-> 一个引导式的 AI 辅助开发 Memory Bank 插件
+> 一个引导式的 AI 辅助开发上下文工程管理插件
 
 [![EN](https://img.shields.io/badge/Language-English-blue.svg)](./README.md)
 
-Memory Bank MCP 是一个基于模型上下文协议（MCP）的插件，通过结构化的 Markdown 文件帮助 AI 助手维护持久的项目上下文。它通过提供引导指令而非直接操作的方式，提供了一种系统化的方法来跟踪项目目标、决策、进度和模式。
+上下文工程管理工具是一个基于模型上下文协议（MCP）的插件，通过结构化的 Markdown 文件帮助 AI 助手维护持久的项目上下文。它通过提供引导指令而非直接操作的方式，提供了一种系统化的方法来跟踪项目目标、决策、进度和模式。
 
 ## 功能特性
 
@@ -21,9 +21,9 @@ Memory Bank MCP 是一个基于模型上下文协议（MCP）的插件，通过�
 ```json
 {
   "mcpServers": {
-    "memory-bank": {
+    "context-engineering": {
       "command": "npx",
-      "args": ["memory-bank-mcp"],
+      "args": ["context-engineering-tool"],
       "timeout": 600
     }
   }
@@ -32,21 +32,21 @@ Memory Bank MCP 是一个基于模型上下文协议（MCP）的插件，通过�
 
 ## 快速开始
 
-1. **初始化 Memory Bank**
+1. **初始化上下文工程管理**
 
    ```
-   使用 init-memory-bank 创建 memory-bank 目录和核心文件
+   使用 init-context-engineering 创建 context-engineering 目录和核心文件
    ```
 
-2. **读取 Memory Bank**
+2. **读取上下文工程管理**
 
    ```
-   使用 get-memory-bank-info 查看所有 Memory Bank 内容
+   使用 get-context-info 查看所有上下文工程管理内容
    ```
 
-3. **更新 Memory Bank**
+3. **更新上下文工程管理**
    ```
-   使用 update-memory-bank 获取更新特定文件的指导
+   使用 update-context-engineering 获取更新特定文件的指导
    ```
 
 ## 核心文件
@@ -88,11 +88,11 @@ Memory Bank MCP 是一个基于模型上下文协议（MCP）的插件，通过�
 
 ### 对于 AI 助手
 
-1. **每次会话开始**：检查 memory-bank 目录是否存在，然后使用 `get-memory-bank-info` 了解项目状态
-2. **按需初始化**：对新项目使用 `init-memory-bank`
-3. **读取上下文**：使用 `get-memory-bank-info` 了解项目状态
-4. **更新指导**：使用 `update-memory-bank` 获取更新指导
-5. **遵循指导**：执行提供的指导来维护 Memory Bank
+1. **每次会话开始**：检查 context-engineering 目录是否存在，然后使用 `get-context-info` 了解项目状态
+2. **按需初始化**：对新项目使用 `init-context-engineering`
+3. **读取上下文**：使用 `get-context-info` 了解项目状态
+4. **更新指导**：使用 `update-context-engineering` 获取更新指导
+5. **遵循指导**：执行提供的指导来维护上下文工程管理
 
 ### 更新触发条件
 
@@ -105,9 +105,9 @@ Memory Bank MCP 是一个基于模型上下文协议（MCP）的插件，通过�
 
 ## 工具参考
 
-### init-memory-bank
+### init-context-engineering
 
-初始化 Memory Bank，创建所有核心文件。
+初始化上下文工程管理，创建所有核心文件。
 
 **参数：**
 
@@ -116,19 +116,19 @@ Memory Bank MCP 是一个基于模型上下文协议（MCP）的插件，通过�
 
 **返回：** 创建的文件列表和下一步指导
 
-### get-memory-bank-info
+### get-context-info
 
-读取并返回所有 Memory Bank 内容（类似于 codelf 的 get-project-info）。
+读取并返回所有上下文工程管理内容（类似于 codelf 的 get-project-info）。
 
 **参数：**
 
 - `rootPath`：项目根目录路径
 
-**返回：** 为 AI 上下文格式化的 Memory Bank 内容
+**返回：** 为 AI 上下文格式化的上下文工程管理内容
 
-### update-memory-bank
+### update-context-engineering
 
-提供更新 Memory Bank 文件的指导。
+提供更新上下文工程管理文件的指导。
 
 **参数：**
 
@@ -145,10 +145,10 @@ Memory Bank MCP 是一个基于模型上下文协议（MCP）的插件，通过�
 添加到 设置 → 规则 → 用户规则：
 
 ```
-在开始任何任务之前，检查项目中是否存在 memory-bank 目录,如果没有则运行mcp命令init-memory-bank。
-在会话开始时使用mcp命令 get-memory-bank-info 读取 Memory Bank 内容。
-完成任务或对话后，你必须使用mcp命令 update-memory-bank 更新 Memory Bank 内容。
-遵循mcp指导来维护 Memory Bank 文件。
+在开始任何任务之前，检查项目中是否存在 context-engineering 目录,如果没有则运行mcp命令init-context-engineering。
+在会话开始时使用mcp命令 get-context-info 读取上下文工程管理内容。
+完成任务或对话后，你必须使用mcp命令 update-context-engineering 更新上下文工程管理内容。
+遵循mcp指导来维护上下文工程管理文件。
 ```
 
 ### Windsurf 设置
@@ -156,10 +156,10 @@ Memory Bank MCP 是一个基于模型上下文协议（MCP）的插件，通过�
 添加到 设置 → Cascade → 记忆和规则 → 全局规则：
 
 ```
-在开始任何任务之前，检查项目中是否存在 memory-bank 目录,如果没有则运行mcp命令init-memory-bank。
-在会话开始时使用mcp命令 get-memory-bank-info 读取 Memory Bank 内容。
-完成任务或对话后，你必须使用mcp命令 update-memory-bank 更新 Memory Bank 内容。
-遵循mcp指导来维护 Memory Bank 文件。
+在开始任何任务之前，检查项目中是否存在 context-engineering 目录,如果没有则运行mcp命令init-context-engineering。
+在会话开始时使用mcp命令 get-context-info 读取上下文工程管理内容。
+完成任务或对话后，你必须使用mcp命令 update-context-engineering 更新上下文工程管理内容。
+遵循mcp指导来维护上下文工程管理文件。
 ```
 
 ## 贡献
