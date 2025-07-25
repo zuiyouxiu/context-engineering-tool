@@ -665,8 +665,8 @@ ${projectAnalysis.languages ? `
 ${!fileChecks.contextEngineering ? '1. 🚀 运行 `init-context-engineering` 初始化系统\n' : ''}
 ${userPrefsStatus !== 'configured' ? '2. 🧠 运行 `learn-user-preferences` 学习编程偏好\n' : ''}
 ${!projectAnalysis.languages ? '3. 📊 运行 `analyze-project-context` 分析项目\n' : ''}
-4. 🎯 使用 `build-contextual-prompt` 生成智能提示词
-5. 💾 通过 `manage-memory` 积累项目知识
+4. 🎯 使用 \`build-contextual-prompt\` 生成智能提示词\n' +
+'5. 💾 通过 \`manage-memory\` 积累项目知识\n
 
 ### 优化建议
 ${includeRecommendations ? `

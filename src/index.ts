@@ -10,7 +10,10 @@ import { existsSync, promises as fs } from "fs";
 import * as path from "path";
 import { z } from "zod";
 
-// 导入精简的核心上下文工程工具
+// 导入增强版上下文工程工具（v4.0）- 基于上下文工程四大支柱
+// 新增：增强记忆系统、分层检索、污染防护、动态工具选择
+import { registerEnhancedContextEngineeringTools } from './tools/enhanced-memory-system.js';
+// 保持兼容性：继续支持v3.0工具
 import { registerCoreContextEngineeringTools } from './tools/core-mcp-tools.js';
 
 // 工具函数
@@ -33,11 +36,14 @@ const CONTEXT_ENGINEERING_FORMULA = {
 const getServer = () => {
   const server = new McpServer({
     name: "context-engineering-tool",
-    version: "3.0.0",
-    description: "上下文工程管理工具 v3.0 - 智能提示词构造+持久化记忆管理"
+    version: "4.0.0",
+    description: "上下文工程管理工具 v4.0 - 基于上下文工程四大支柱全面重构：🏛️ RAG增强检索、🧠 多级验证记忆系统、🔄 复杂状态管理、🎯 自适应动态提示词。🛡️ 解决大海捞针、上下文污染、工具过载三大核心挑战"
   });
 
-  // 注册核心上下文工程工具（精简的3个工具）
+  // 注册增强版上下文工程工具（v4.0 - 集成四大支柱）
+  registerEnhancedContextEngineeringTools(server);
+  
+  // 保持兼容性：继续支持v3.0工具
   registerCoreContextEngineeringTools(server);
 
   // 生成记忆文件模板
@@ -697,10 +703,30 @@ app.delete('/mcp', async (req: Request, res: Response) => {
 // 启动服务器
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 8389;
 app.listen(PORT, () => {
-  console.log(`🚀 上下文工程管理工具 v3.0 MCP 服务器已启动 (精简3个核心工具)`);
-  console.log(`📡 端口: ${PORT}`);
-  console.log(`🔗 端点: http://localhost:${PORT}/mcp`);
-  console.log(`✨ 核心理念: 充分利用AI工具内置能力+智能提示词构造+持久化记忆管理`);
+  console.log('');
+  console.log('🎯 ========== 上下文工程管理工具 v4.0 ========== 🎯');
+  console.log('');
+  console.log('🏛️ 基于上下文工程四大支柱全面重构：');
+  console.log('   📚 支柱1：RAG增强检索 - 分层检索，解决大海捞针');
+  console.log('   🧠 支柱2：多级验证记忆系统 - 信息溯源，防止污染');  
+  console.log('   🔄 支柱3：复杂状态管理 - 工作流编排，任务追踪');
+  console.log('   🎯 支柱4：自适应动态提示词 - 智能角色，持续优化');
+  console.log('');
+  console.log('🛡️ 解决上下文工程三大核心挑战：');
+  console.log('   🔍 大海捞针：分层检索 + 优先级排序 + 上下文聚焦');
+  console.log('   🧹 上下文污染：多级验证 + 隔离沙箱 + 自动清理');
+  console.log('   ⚡ 工具过载：智能选择 + 动态推荐 + 置信度排序');
+  console.log('');
+  console.log(`📡 服务器信息:`);
+  console.log(`   端口: ${PORT}`);
+  console.log(`   端点: http://localhost:${PORT}/mcp`);
+  console.log(`   版本: v4.0.0 (基于最新上下文工程理论)`);
+  console.log('');
+  console.log('🔄 向后兼容: 继续支持v3.0工具API');
+  console.log('✨ 全新体验: 让AI编程助手更懂你的项目和偏好');
+  console.log('');
+  console.log('================================================== 🚀');
+  console.log('');
 });
 
 // 优雅关闭

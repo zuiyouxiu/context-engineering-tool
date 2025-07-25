@@ -1,6 +1,6 @@
 {
   "name": "context-engineering-tool",
-  "version": "2.0.0",
+  "version": "4.0.0",
   "bin": {
     "context-engineering-tool": "build/index.js"
   },
@@ -9,7 +9,7 @@
   ],
   "license": "MIT",
   "author": "Context Engineering Tool Contributors",
-  "description": "上下文工程管理工具 v2.0 - 基于上下文工程理念的智能项目管理系统，支持多源信息整合、动态上下文构建和质量评估",
+  "description": "上下文工程管理工具 v4.0 - 集成四大支柱增强功能，解决大海捞针、上下文污染、工具过载三大挑战，支持分层检索、智能验证和自适应学习",
   "keywords": [
     "context-engineering",
     "mcp",
