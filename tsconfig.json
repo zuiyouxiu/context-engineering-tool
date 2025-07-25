@@ -32,6 +32,9 @@
     "node_modules", 
     "build",
     "**/*.test.ts",
-    "**/*.spec.ts"
+    "**/*.spec.ts",
+    "src/tools/context-engineering-enhanced.ts",
+    "src/tools/core-mcp-tools-v4.ts", 
+    "src/tools/core-mcp-tools.ts"
   ]
 }

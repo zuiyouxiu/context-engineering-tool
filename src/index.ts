@@ -10,11 +10,12 @@ import { existsSync, promises as fs } from "fs";
 import * as path from "path";
 import { z } from "zod";
 
+// 导入简化版上下文工程工具（推荐使用）- 专注核心功能，易于AI调用
+import { registerSimpleContextEngineeringTools } from './tools/simple-mcp-tools.js';
 // 导入增强版上下文工程工具（v4.0）- 基于上下文工程四大支柱
-// 新增：增强记忆系统、分层检索、污染防护、动态工具选择
-import { registerEnhancedContextEngineeringTools } from './tools/enhanced-memory-system.js';
+// import { registerEnhancedContextEngineeringTools } from './tools/enhanced-memory-system.js';
 // 保持兼容性：继续支持v3.0工具
-import { registerCoreContextEngineeringTools } from './tools/core-mcp-tools.js';
+// import { registerCoreContextEngineeringTools } from './tools/core-mcp-tools.js';
 
 // 工具函数
 import { normalizePath, formatTimestamp } from './utils/path-utils.js';
@@ -40,153 +41,42 @@ const getServer = () => {
     description: "上下文工程管理工具 v4.0 - 基于上下文工程四大支柱全面重构：🏛️ RAG增强检索、🧠 多级验证记忆系统、🔄 复杂状态管理、🎯 自适应动态提示词。🛡️ 解决大海捞针、上下文污染、工具过载三大核心挑战"
   });
 
+  // 注册简化版上下文工程工具（推荐优先使用）- 专注核心功能，易于AI调用
+  registerSimpleContextEngineeringTools(server);
+  
   // 注册增强版上下文工程工具（v4.0 - 集成四大支柱）
-  registerEnhancedContextEngineeringTools(server);
+  // registerEnhancedContextEngineeringTools(server);
   
   // 保持兼容性：继续支持v3.0工具
-  registerCoreContextEngineeringTools(server);
+  // registerCoreContextEngineeringTools(server);
 
-  // 生成记忆文件模板
-  const getMemoryFileTemplate = (fileName: string): string => {
+  // 简化的工作日志初始化（与简化版工具一致）
+  const getWorkLogTemplate = (): string => {
     const timestamp = formatTimestamp();
-    
-    switch (fileName) {
-      case 'short-term/conversations.md':
-        return `# 对话历史记录
+    return `# AI工作日志
 
 *初始化时间: ${timestamp}*
 
-本文件记录用户与AI助手的对话历史，用于维持会话上下文连续性。
+本文件记录AI助手与用户的协作历史，采用简单的JSON格式存储。
 
 ## 使用说明
 
-- 每次对话自动记录时间戳、用户输入、AI回应和结果
-- 系统会自动学习用户的沟通模式和偏好
-- 记录会自动清理，保持文件大小适中
+- 每次任务完成后自动记录
+- 包含工作类型、描述、时间戳和相关文件
+- 自动保持最近50条记录，定期清理
+
+## 日志位置
+
+实际日志存储在项目根目录的 \`.ai-work-log.json\` 文件中。
+
+## 查看记录
+
+可以直接打开 \`.ai-work-log.json\` 文件查看完整的工作历史记录。
 
 ---
 
-*暂无对话记录。开始使用上下文工程管理工具后，对话记录将自动出现在此处。*
+*开始使用上下文工程管理工具后，工作记录将自动生成。*
 `;
-
-      case 'short-term/recent-actions.md':
-        return `# 最近操作记录
-
-*初始化时间: ${timestamp}*
-
-本文件记录用户最近执行的MCP工具操作，用于学习操作模式和优化工作流。
-
-## 使用说明
-
-- 自动记录每个MCP工具的调用情况
-- 包含操作参数、执行时间、成功状态等信息
-- 用于分析用户的工作模式和优化建议
-
-| 时间 | 操作 | 状态 | 耗时 | 描述 |
-|------|------|------|------|------|
-
-## 操作详情
-
-*暂无操作记录。使用MCP工具后，操作记录将自动出现在此处。*
-`;
-
-      case 'short-term/session-state.md':
-        return `# 当前会话状态
-
-*初始化时间: ${timestamp}*
-
-本文件维护当前会话的状态信息，包括会话ID、当前任务、用户目标等。
-
-## 基本信息
-
-- **会话ID**: 待分配
-- **开始时间**: ${timestamp}
-- **最后活动**: ${timestamp}
-- **当前任务**: 无
-
-## 用户目标
-
-*当前会话的用户目标将在会话进行中自动识别和记录。*
-
-## 活跃工具
-
-*当前会话中使用的MCP工具将自动记录在此处。*
-
-## 上下文历史
-
-*会话中的上下文变更历史将自动维护。*
-`;
-
-      case 'long-term/user-profile.md':
-        return `# 用户偏好配置
-
-*初始化时间: ${timestamp}*
-
-本文件维护用户的长期偏好和学习进度，用于提供个性化的AI助手体验。
-
-## 编程风格偏好
-
-- **主要语言**: 未设置
-- **框架**: 未设置  
-- **架构模式**: 未设置
-- **测试方法**: standard
-- **文档级别**: standard
-- **代码详细度**: standard
-
-## 工作流偏好
-
-- **任务分解风格**: high-level
-- **反馈频率**: milestone
-- **解释级别**: standard
-- **审查过程**: hybrid
-
-## 技术偏好
-
-- **主要语言**: 未设置
-- **框架**: 未设置
-- **工具**: 未设置
-- **部署目标**: 未设置
-- **数据库类型**: 未设置
-- **测试框架**: 未设置
-
-## 沟通风格
-
-- **回复长度**: standard
-- **技术细节**: medium
-- **示例偏好**: balanced
-- **问题处理**: guided
-
-## 学习进度
-
-### 成功模式
-
-*通过使用过程中的成功经验自动学习和记录。*
-
-### 常见错误
-
-*通过使用过程中的错误经验自动学习和记录。*
-
-### 已掌握概念
-
-*根据交互历史自动识别用户已掌握的技术概念。*
-
-### 当前学习目标
-
-*基于用户行为模式自动推断和记录学习目标。*
-
----
-
-*此配置文件将根据您的使用习惯自动学习和更新，以提供更个性化的体验。*
-`;
-
-      default:
-        return `# ${fileName}
-
-*初始化时间: ${timestamp}*
-
-此文件由上下文工程管理工具自动创建。
-`;
-    }
   };
 
 
@@ -240,14 +130,14 @@ ${coreContent}
 ## 💡 使用建议
 
 1. 完成重要更改后，使用'update-context-engineering'获取更新指导
-2. 使用新的核心上下文工程工具（精简的3个）：
-   - 'analyze-project-context': 分析项目技术栈并生成搜索指导
-   - 'build-contextual-prompt': 构建智能提示词（核心工具）
-   - 'manage-memory': 记忆管理（包含用户偏好学习）
+2. 使用简化版上下文工程工具（推荐的3个）：
+   - 'get-project-context': 获取项目基本信息（会话开始必调）
+   - 'analyze-project-details': 深入项目分析（关键词触发）
+   - 'save-work-progress': 保存工作记录（任务完成必调）
 3. 保持所有上下文工程管理文件的一致性
 
 ---
-*此上下文实现了上下文工程公式：提示词+用户偏好+记忆管理+信息检索+工具调用*`;
+*简化版设计理念：专注核心功能，避免工具过载，确保AI可靠调用*`;
 
         return {
           content: [
@@ -484,7 +374,7 @@ macOS/Linux示例: "/home/name/project"`
 此工具将：
 - 创建 context-engineering/core-context 目录结构
 - 为 5 个核心文件生成初始模板
-- 创建 memory 目录结构用于记忆管理 
+- 创建简化的工作日志文档
 - 读取并集成 projectBrief.md（如果存在）
 - 提供下一步指导`,
     {
@@ -502,7 +392,6 @@ macOS/Linux示例: "/home/name/project"`
       const normalizedPath = normalizePath(rootPath);
       const contextEngineeringPath = path.join(normalizedPath, "context-engineering");
       const coreContextPath = path.join(contextEngineeringPath, "core-context");
-      const memoryPath = path.join(contextEngineeringPath, "memory");
 
       try {
         // Check if directory exists
@@ -531,8 +420,6 @@ ${files.map((f) => `- ${f}`).join("\n")}
 
         // Create directory structure
         await fs.mkdir(coreContextPath, { recursive: true });
-        await fs.mkdir(path.join(memoryPath, "short-term"), { recursive: true });
-        await fs.mkdir(path.join(memoryPath, "long-term"), { recursive: true });
 
         // Check if projectBrief.md exists
         let projectBriefContent = "";
@@ -564,20 +451,11 @@ ${files.map((f) => `- ${f}`).join("\n")}
           createdFiles.push(`core-context/${filename}`);
         }
 
-        // Create memory structure files (Markdown format)
-        const memoryFiles = [
-          'short-term/conversations.md',
-          'short-term/recent-actions.md', 
-          'short-term/session-state.md',
-          'long-term/user-profile.md'
-        ];
-
-        for (const memoryFile of memoryFiles) {
-          const filePath = path.join(memoryPath, memoryFile);
-          const initialContent = getMemoryFileTemplate(memoryFile);
-          await fs.writeFile(filePath, initialContent, "utf-8");
-          createdFiles.push(`memory/${memoryFile}`);
-        }
+        // Create simplified work log documentation
+        const workLogPath = path.join(contextEngineeringPath, "工作日志说明.md");
+        const workLogContent = getWorkLogTemplate();
+        await fs.writeFile(workLogPath, workLogContent, "utf-8");
+        createdFiles.push("工作日志说明.md");
 
         return {
           content: [
@@ -598,9 +476,10 @@ ${
 
 🚀 接下来的步骤：
 1. **完善核心文档**：编辑 core-context/ 中的 5 个核心文件
-2. **开始使用**：使用 get-context-info 获取完整项目上下文
-3. **智能协作**：使用 build-dynamic-context 为任务构建智能上下文
-4. **记忆学习**：系统将自动学习你的偏好和工作模式
+2. **开始使用**：使用简化版工具进行智能协作
+   - get-project-context（会话开始）
+   - analyze-project-details（项目分析）
+   - save-work-progress（任务完成）
 
 📚 核心文件说明：
 - **productContext.md**: 项目目标、功能和架构概览
@@ -609,14 +488,15 @@ ${
 - **decisionLog.md**: 重要决策记录
 - **systemPatterns.md**: 代码模式和标准
 
-🧠 记忆系统：
-- **短期记忆**: 对话历史、操作记录
-- **长期记忆**: 用户偏好、学习进度
+📝 简化记录系统：
+- **工作日志**: 自动记录在 \`.ai-work-log.json\` 中
+- **最多保留50条记录**，自动清理过期内容
+- **无复杂目录结构**，维护简单
 
 💡 维护建议：
 - 保持文件简洁（< 300 行），定期归档
 - 使用 update-context-engineering 获取详细更新指导
-- 利用记忆管理功能提升个性化体验
+- 工作记录自动管理，无需手动维护
 
 现在可以开始享受智能的上下文工程管理了！`,
             },
@@ -701,10 +581,17 @@ app.delete('/mcp', async (req: Request, res: Response) => {
 });
 
 // 启动服务器
-const PORT = process.env.PORT ? parseInt(process.env.PORT) : 8389;
+const PORT = process.env.PORT ? parseInt(process.env.PORT) : 9001;
 app.listen(PORT, () => {
   console.log('');
   console.log('🎯 ========== 上下文工程管理工具 v4.0 ========== 🎯');
+  console.log('');
+  console.log('✨ 核心理念：简单优于复杂 - 专注AI可靠调用');
+  console.log('');
+  console.log('📦 工具架构：');
+  console.log('   ✅ 简化版工具（当前启用）：3个核心工具，AI可靠调用');
+  console.log('   📝 简化记录系统：.ai-work-log.json，自动管理');
+  console.log('   🔄 向后兼容：支持传统init和update工具');
   console.log('');
   console.log('🏛️ 基于上下文工程四大支柱全面重构：');
   console.log('   📚 支柱1：RAG增强检索 - 分层检索，解决大海捞针');
@@ -722,8 +609,8 @@ app.listen(PORT, () => {
   console.log(`   端点: http://localhost:${PORT}/mcp`);
   console.log(`   版本: v4.0.0 (基于最新上下文工程理论)`);
   console.log('');
-  console.log('🔄 向后兼容: 继续支持v3.0工具API');
-  console.log('✨ 全新体验: 让AI编程助手更懂你的项目和偏好');
+  console.log('🎯 简化成果: 解决工具过载问题，确保AI可靠调用');
+  console.log('✨ 核心价值: 让AI编程助手更懂你的项目，记录工作历史');
   console.log('');
   console.log('================================================== 🚀');
   console.log('');
