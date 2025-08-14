@@ -25,7 +25,7 @@ claude mcp add context-engineering-tool context-engineering-tool
 
 ```bash
 # 克隆仓库
-git clone https://github.com/yourusername/context-engineering-tool.git
+git clone https://github.com/zuiyouxiu/context-engineering-tool.git
 cd context-engineering-tool
 
 # 安装依赖并构建
@@ -39,7 +39,7 @@ claude mcp add context-engineering-tool node build/index.js
 ### 方式3: 一键安装脚本
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/yourusername/context-engineering-tool/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/zuiyouxiu/context-engineering-tool/main/install.sh | bash
 ```
 
 ## 使用方法
