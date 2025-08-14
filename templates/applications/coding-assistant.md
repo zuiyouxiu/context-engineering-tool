@@ -12,6 +12,135 @@
 - **上下文感知**：基于完整项目上下文做出准确判断
 - **经验积累**：从历史交互中学习，持续优化体验
 
+## 存量项目分析模式 (LEGACY_PROJECT_ANALYSIS)
+
+### 项目健康度快速评估
+当AI遇到存量项目时，首先进行项目健康度评估：
+
+```bash
+# AI自动执行的检查命令 (使用现有工具)
+# 1. 文档完整度检查
+find . -name "README*" -o -name "*.md" | head -10
+grep -r "TODO\|FIXME\|XXX" --include="*.js" --include="*.ts" | wc -l  
+find . -name "*test*" -o -name "*spec*" | head -5
+
+# 2. 代码质量指标
+grep -r "console.log\|print\|debug" --include="*.js" | wc -l
+find . -name "*.js" -exec wc -l {} + | sort -n | tail -10
+
+# 3. 架构复杂度评估
+find . -name "node_modules" -prune -o -name "*.js" -print | wc -l
+grep -r "require\|import" --include="*.js" | wc -l
+```
+
+### 存量项目上下文构建策略
+
+```typescript
+interface LegacyProjectContext {
+  // 健康度评估结果
+  healthScore: {
+    documentationCoverage: number;  // 0-100%
+    testCoverage: number;          // 0-100%
+    codeComplexity: 'low' | 'medium' | 'high' | 'extreme';
+    technicalDebt: 'manageable' | 'significant' | 'critical';
+  };
+  
+  // 推断的项目信息
+  inferredArchitecture: {
+    pattern: 'monolithic' | 'layered' | 'microservices' | 'unknown';
+    mainTech: string[];
+    dataFlow: 'simple' | 'complex' | 'chaotic';
+    integrationPoints: ExternalDependency[];
+  };
+  
+  // 风险评估
+  riskAssessment: {
+    highRiskModules: string[];     // 复杂且缺少测试的模块
+    businessCriticalPaths: string[]; // 核心业务流程
+    unknownAreas: string[];        // 完全无法理解的代码区域
+    modificationSafeZones: string[]; // 相对安全的修改区域
+  };
+  
+  // 学习优先级
+  learningPriority: {
+    mustUnderstand: string[];      // 必须理解的核心模块
+    shouldUnderstand: string[];    // 应该理解的重要模块  
+    canIgnore: string[];           // 可以暂时忽略的边缘功能
+  };
+}
+```
+
+### 渐进式理解工作流
+
+```yaml
+阶段1_快速概览 (1-2小时):
+  目标: 建立项目的基本认知
+  使用工具: LS, Glob, 基础Grep
+  关键任务:
+    - 识别项目类型和技术栈
+    - 找到入口文件和主要配置
+    - 评估文档和测试完整度
+    - 标识明显的架构模式
+  输出: 项目健康度报告
+
+阶段2_架构推断 (4-8小时):
+  目标: 理解系统的整体架构
+  使用工具: 智能Grep, Task工具, Read工具
+  关键任务:
+    - 映射模块依赖关系
+    - 识别数据流和状态管理
+    - 分析API端点和业务逻辑
+    - 发现隐藏的设计模式
+  输出: 架构推断文档
+
+阶段3_业务逻辑挖掘 (8-16小时):
+  目标: 理解核心业务规则和流程
+  使用工具: 深度代码分析, 运行时观察
+  关键任务:
+    - 追踪关键业务流程
+    - 识别验证规则和约束
+    - 理解错误处理策略
+    - 发现性能瓶颈和优化点
+  输出: 业务逻辑文档
+
+阶段4_知识重建 (持续进行):
+  目标: 系统化地补全缺失信息
+  使用工具: 所有可用工具的协同使用
+  关键任务:
+    - 生成缺失的文档
+    - 创建基础测试用例
+    - 建立监控和日志
+    - 识别重构机会
+  输出: 完整的项目上下文
+```
+
+### 超保守模式操作原则
+
+```typescript
+interface UltraConservativeMode {
+  principles: [
+    "观察优于假设 - 基于实际运行行为而非代码推测",
+    "验证优于修改 - 必须有测试保护才允许更改", 
+    "回滚优于修复 - 出现问题立即回滚而非尝试修复",
+    "文档优于记忆 - 所有发现必须记录，不依赖AI记忆"
+  ];
+  
+  restrictions: [
+    "前2-4周禁止任何代码修改",
+    "任何变更必须有对应的监控和测试",
+    "复杂模块必须有人工审核确认",
+    "关键业务逻辑禁止AI独立修改"
+  ];
+  
+  workflowGates: {
+    phase1: "只允许观察和分析，生成理解文档";
+    phase2: "允许添加非侵入性的日志和监控";
+    phase3: "允许生成测试用例和补充文档";
+    phase4: "在充分保护下进行小范围重构";
+  };
+}
+```
+
 ## 上下文工程在编程中的应用
 
 ### 代码理解上下文构建
@@ -64,7 +193,132 @@ interface CodeUnderstandingContext {
   性能优化建议: 基于性能数据的优化建议
 ```
 
-#### 2. 记忆系统 - 开发习惯学习
+#### 2. 记忆系统 - 开发习惯学习与存量项目知识重建
+
+##### 存量项目知识重建 (KNOWLEDGE_RECONSTRUCTION)
+
+```typescript
+interface LegacyProjectMemory {
+  // 渐进式学习记录
+  understandingProgress: {
+    understoodModules: {
+      [moduleName: string]: {
+        confidenceLevel: number;     // 0-100%
+        lastUpdated: Date;
+        keyFindings: string[];
+        remainingQuestions: string[];
+      }
+    };
+    
+    partiallyUnderstoodModules: {
+      [moduleName: string]: {
+        confidenceLevel: number;     // 30-70%
+        blockers: string[];
+        nextSteps: string[];
+        hypotheses: Hypothesis[];
+      }
+    };
+    
+    unknownAreas: {
+      [moduleName: string]: {
+        complexity: 'high' | 'extreme';
+        riskLevel: 'medium' | 'high' | 'critical';
+        analysisAttempts: number;
+        expertise_needed: string[];
+      }
+    };
+  };
+  
+  // 假设验证系统  
+  hypothesisTracking: {
+    activeHypotheses: {
+      [id: string]: {
+        hypothesis: string;
+        evidence_for: string[];
+        evidence_against: string[];
+        confidence: number;
+        verification_method: string;
+        status: 'testing' | 'verified' | 'refuted' | 'needs_more_data';
+      }
+    };
+    
+    verifiedKnowledge: {
+      [domain: string]: {
+        facts: VerifiedFact[];
+        patterns: CodePattern[];
+        business_rules: BusinessRule[];
+        architecture_decisions: ArchitecturalDecision[];
+      }
+    };
+  };
+  
+  // 项目考古发现
+  archaeologicalFindings: {
+    code_patterns: {
+      [pattern: string]: {
+        occurrences: CodeLocation[];
+        purpose: string;
+        risk_level: 'low' | 'medium' | 'high';
+        modification_strategy: 'safe' | 'risky' | 'forbidden';
+      }
+    };
+    
+    hidden_dependencies: {
+      [dependency: string]: {
+        type: 'hard' | 'soft' | 'implicit';
+        discovery_method: string;
+        impact_analysis: string;
+        mitigation_strategy?: string;
+      }
+    };
+    
+    business_logic_discoveries: {
+      [logic_area: string]: {
+        inferred_rules: BusinessRule[];
+        edge_cases: EdgeCase[];
+        validation_logic: ValidationRule[];
+        error_handling: ErrorHandlingPattern[];
+      }
+    };
+  };
+}
+```
+
+##### 渐进式学习工作流
+
+```yaml
+知识积累策略:
+  初始发现阶段:
+    - 记录所有观察到的模式和异常
+    - 生成初步的架构假设
+    - 标记高风险和安全区域
+    - 建立学习优先级队列
+    
+  验证确认阶段:
+    - 通过代码分析验证假设
+    - 运行时观察确认行为
+    - 收集更多证据支持或反驳
+    - 更新置信度评分
+    
+  知识沉淀阶段:
+    - 将验证的发现转化为确定知识
+    - 生成文档和最佳实践
+    - 建立代码修改的安全指导
+    - 为团队共享经验教训
+
+记忆更新机制:
+  触发条件:
+    - 新的代码分析发现
+    - 假设被证实或否定
+    - 运行时行为观察
+    - 代码修改后的反馈
+    
+  更新策略:
+    - 增量更新已有知识
+    - 解决知识冲突
+    - 重新评估置信度
+    - 调整学习重点
+```
 ```typescript
 interface DeveloperMemory {
   // 编程风格记忆
@@ -131,7 +385,131 @@ interface DeveloperMemory {
   依赖等待处理: 处理外部依赖的等待状态
 ```
 
-#### 4. 动态提示 - 个性化编程指导
+#### 4. 动态提示 - 个性化编程指导与存量项目分析
+
+##### 存量项目搜索策略 (PROGRESSIVE_SEARCH_STRATEGY)
+
+```yaml
+分层搜索工作流:
+
+第一层_结构性搜索 (使用Glob + LS):
+  目标: 快速建立项目拓扑
+  搜索策略:
+    - "find . -type f -name 'package.json' -o -name '*.config.js' -o -name 'Dockerfile'"
+    - "ls -la src/ lib/ app/ components/ 2>/dev/null | head -20"
+    - "find . -name 'node_modules' -prune -o -name '*.js' -print | head -50"
+  预期输出: 项目结构树和主要配置文件
+  时间限制: 5-10分钟
+
+第二层_模式搜索 (使用Grep):
+  目标: 识别关键编程模式
+  搜索策略:
+    - "grep -r 'export.*function|module.exports|export default' --include='*.js' | head -20"
+    - "grep -r 'router|app\\.|express()' --include='*.js' | head -10"  
+    - "grep -r 'Schema|Model|Table' --include='*.js' | head -15"
+    - "grep -r 'async.*function|await' --include='*.js' | head -10"
+  预期输出: 主要代码模式和架构线索
+  时间限制: 15-20分钟
+
+第三层_业务逻辑搜索 (使用智能关键词):
+  目标: 发现业务概念和流程
+  搜索策略:
+    - "grep -ri 'user|customer|order|product|payment' --include='*.js' | head -20"
+    - "grep -ri 'auth|login|permission|role' --include='*.js' | head -15"
+    - "grep -ri 'validate|check|verify|confirm' --include='*.js' | head -10"
+    - "grep -r 'error|exception|throw|catch' --include='*.js' | head -15"
+  预期输出: 核心业务概念和处理逻辑
+  时间限制: 20-30分钟
+
+第四层_深度分析 (使用Task工具):
+  目标: 复杂逻辑的专项分析
+  任务类型:
+    - "分析用户认证模块的完整实现逻辑"
+    - "追踪订单处理的端到端流程"
+    - "理解数据验证的策略和规则"
+    - "映射错误处理的层次结构"
+  预期输出: 特定领域的深度理解
+  时间限制: 每个任务30-60分钟
+
+搜索结果整理策略:
+  概念分类:
+    - 架构层面: 框架选择、设计模式、模块组织
+    - 业务层面: 核心概念、业务规则、流程定义
+    - 技术层面: 数据存储、API设计、错误处理
+    - 运维层面: 配置管理、部署策略、监控方案
+    
+  风险评估:
+    - 高风险区域: 复杂业务逻辑 + 缺少测试
+    - 中风险区域: 重要功能 + 部分测试覆盖  
+    - 低风险区域: 工具函数 + 充分测试
+    
+  修改优先级:
+    - 立即可修改: 配置文件、工具函数、文档
+    - 谨慎修改: 业务逻辑、API接口、数据模型
+    - 禁止修改: 核心算法、安全相关、数据迁移
+```
+
+##### 存量项目考古工作流 (ARCHAEOLOGICAL_WORKFLOW)
+
+```typescript
+interface ArchaeologicalWorkflow {
+  // 阶段化分析流程
+  analysisPhases: {
+    reconnaissance: {
+      duration: '1-2 hours';
+      tools: ['LS', 'Glob', 'basic Grep'];
+      objective: '快速项目概览和健康度评估';
+      deliverable: 'ProjectHealthReport';
+      gatekeeper: (report: ProjectHealthReport) => 'proceed' | 'needs_expert' | 'too_risky';
+    };
+    
+    excavation: {
+      duration: '4-8 hours';  
+      tools: ['smart Grep', 'Read', 'Task'];
+      objective: '深度挖掘架构模式和业务逻辑';
+      deliverable: 'ArchitecturalDiscoveries';
+      gatekeeper: (discoveries: ArchitecturalDiscoveries) => 'sufficient' | 'needs_more_analysis';
+    };
+    
+    interpretation: {
+      duration: '8-16 hours';
+      tools: ['all available tools', 'runtime observation'];
+      objective: '理解业务规则和系统行为';
+      deliverable: 'BusinessLogicDocumentation';
+      gatekeeper: (docs: BusinessLogicDocumentation) => 'ready_for_modification' | 'needs_validation';
+    };
+    
+    preservation: {
+      duration: 'continuous';
+      tools: ['memory system', 'documentation generation'];
+      objective: '持续记录和更新项目理解';
+      deliverable: 'LivingDocumentation';
+      gatekeeper: (docs: LivingDocumentation) => 'maintaining' | 'needs_refresh';
+    };
+  };
+  
+  // 决策门控系统
+  decisionGates: {
+    safety_check: (context: ProjectContext) => {
+      if (context.testCoverage < 20 && context.complexity === 'high') {
+        return 'ultra_conservative_mode';
+      } else if (context.documentationScore < 30) {
+        return 'documentation_first_mode';  
+      } else {
+        return 'normal_collaboration_mode';
+      }
+    };
+    
+    modification_approval: (change: ProposedChange) => {
+      const riskScore = assessModificationRisk(change);
+      if (riskScore > 0.8) return 'requires_human_review';
+      if (riskScore > 0.6) return 'requires_comprehensive_testing';
+      if (riskScore > 0.3) return 'requires_basic_validation';
+      return 'approved';
+    };
+  };
+}
+```
 ```typescript
 interface DynamicCodingPrompts {
   // 角色自适应

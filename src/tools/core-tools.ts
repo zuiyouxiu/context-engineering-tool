@@ -61,7 +61,7 @@ export function registerCoreTools(server: McpServer) {
 根据变更类型和描述更新相应的上下文文件`,
     {
       rootPath: z.string().describe("项目根目录路径"),
-      changeType: z.enum(['architecture', 'feature', 'bugfix', 'refactor', 'decision', 'progress']).describe("变更类型"),
+      changeType: z.enum(['architecture', 'feature', 'bugfix', 'refactor', 'decision', 'progress', 'legacy-analysis', 'legacy-understanding', 'legacy-discovery']).describe("变更类型"),
       description: z.string().describe("变更描述"),
       targetFile: z.enum(['productContext.md', 'activeContext.md', 'progress.md', 'decisionLog.md', 'systemPatterns.md']).optional().describe("目标文件（可选，将根据changeType自动选择）")
     },
@@ -91,6 +91,15 @@ export function registerCoreTools(server: McpServer) {
               break;
             case 'progress':
               fileToUpdate = 'progress.md';
+              break;
+            case 'legacy-analysis':
+              fileToUpdate = 'productContext.md';
+              break;
+            case 'legacy-understanding':
+              fileToUpdate = 'activeContext.md';
+              break;
+            case 'legacy-discovery':
+              fileToUpdate = 'systemPatterns.md';
               break;
           }
         }
@@ -219,12 +228,14 @@ function getTargetSectionForChange(changeType: string, targetFile: string): { se
     'productContext.md': {
       'architecture': { section: '## 整体架构', insertStyle: 'append' },
       'feature': { section: '## 关键功能', insertStyle: 'append' },
+      'legacy-analysis': { section: '## 存量项目分析 (LEGACY_PROJECT_ANALYSIS)', insertStyle: 'append' },
       'default': { section: '## 项目目标', insertStyle: 'append' }
     },
     'activeContext.md': {
       'feature': { section: '## 当前关注点', insertStyle: 'prepend' },
       'bugfix': { section: '## 最近变更', insertStyle: 'prepend' },
       'progress': { section: '## 最近变更', insertStyle: 'prepend' },
+      'legacy-understanding': { section: '## 存量项目理解进度 (KNOWLEDGE_RECONSTRUCTION)', insertStyle: 'append' },
       'default': { section: '## 当前关注点', insertStyle: 'prepend' }
     },
     'progress.md': {
@@ -240,6 +251,7 @@ function getTargetSectionForChange(changeType: string, targetFile: string): { se
     'systemPatterns.md': {
       'refactor': { section: '## 编码模式', insertStyle: 'append' },
       'architecture': { section: '## 架构模式', insertStyle: 'append' },
+      'legacy-discovery': { section: '## 存量项目考古发现 (ARCHAEOLOGICAL_FINDINGS)', insertStyle: 'append' },
       'default': { section: '## 编码模式', insertStyle: 'append' }
     }
   };
