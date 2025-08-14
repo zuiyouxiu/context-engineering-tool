@@ -4,11 +4,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Build output
-build/
-dist/
-
-# TypeScript
+# Build outputs (keep build/ for distribution)
 *.tsbuildinfo
 
 # Environment variables
@@ -18,6 +14,13 @@ dist/
 .env.test.local
 .env.production.local
 
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
 # OS generated files
 .DS_Store
 .DS_Store?
@@ -26,13 +29,6 @@ dist/
 .Trashes
 ehthumbs.db
 Thumbs.db
-
-# IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
 
 # Logs
 logs
@@ -46,11 +42,13 @@ pids
 
 # Coverage directory used by tools like istanbul
 coverage/
-*.lcov
-
-# nyc test coverage
-.nyc_output
 
 # Temporary folders
 tmp/
 temp/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
