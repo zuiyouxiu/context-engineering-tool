@@ -97,8 +97,8 @@ app.delete('/mcp', async (req: Request, res: Response) => {
 });
 
 // 启动服务器
-const PORT = process.env.PORT ? parseInt(process.env.PORT) : 9001;
-app.listen(PORT, () => {
+const PORT = process.env.PORT ? parseInt(process.env.PORT) : 9439;
+app.listen(PORT, '0.0.0.0', () => {
   console.log('');
   console.log('📁 ========== 上下文工程管理 MCP 服务器 ========== 📁');
   console.log('');
@@ -109,7 +109,7 @@ app.listen(PORT, () => {
   console.log('');
   console.log(`📡 服务器信息:`);
   console.log(`   端口: ${PORT}`);
-  console.log(`   端点: http://localhost:${PORT}/mcp`);
+  console.log(`   端点: http://localhost:${PORT}/mcp (局域网: http://0.0.0.0:${PORT}/mcp)`);
   console.log(`   版本: v3.0.0`);
   console.log('');
   console.log('🎯 专注于：context-docs 目录文件管理');

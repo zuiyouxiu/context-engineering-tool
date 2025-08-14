@@ -4,7 +4,54 @@ import { z } from "zod";
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { normalizePath, formatTimestamp } from '../utils/path-utils.js';
-import { getContextEngineeringTemplates, getDetailedFileGuide } from '../legacy/context-templates.js';
+// Inline templates since legacy templates are removed
+const getContextEngineeringTemplates = () => ({
+  'PROJECT_CONTEXT.md': `# 项目上下文
+
+## 项目概览
+- 项目名称：
+- 项目描述：
+- 技术栈：
+
+## 架构信息
+- 核心模块：
+- 依赖关系：
+
+## 关键特性
+- 主要功能：
+- 技术亮点：
+`,
+  'DEVELOPMENT_MEMORY.md': `# 开发记忆
+
+## 技术决策记录
+### 记录技术选型和架构决策
+
+## 重要变更
+### 记录重大代码变更和重构
+
+## 经验总结
+### 记录开发过程中的经验和教训
+`,
+  'WORK_SESSION.md': `# 工作会话
+
+## 当前任务
+- 待完成任务列表
+
+## 进展状态
+- 已完成任务
+- 遇到的问题
+- 下一步计划
+
+## 会话记录
+- 工作日志和讨论记录
+`
+});
+
+const getDetailedFileGuide = () => ({
+  'PROJECT_CONTEXT.md': { role: '项目基础信息和架构描述', priority: '高' },
+  'DEVELOPMENT_MEMORY.md': { role: '技术决策和变更记录', priority: '中' },
+  'WORK_SESSION.md': { role: '当前工作状态和任务', priority: '高' }
+});
 
 /**
  * 注册上下文管理MCP工具
@@ -21,8 +68,8 @@ export function registerCoreTools(server: McpServer) {
     },
     async ({ rootPath }) => {
       try {
-        const contextDir = path.join(rootPath, 'context-docs');
-        const files = ['productContext.md', 'activeContext.md', 'progress.md', 'decisionLog.md', 'systemPatterns.md'];
+        const contextDir = path.join(rootPath, 'context-doc');
+        const files = ['PROJECT_CONTEXT.md', 'DEVELOPMENT_MEMORY.md', 'WORK_SESSION.md'];
         
         let contextInfo = `# 项目上下文信息\n\n`;
         
@@ -61,45 +108,33 @@ export function registerCoreTools(server: McpServer) {
 根据变更类型和描述更新相应的上下文文件`,
     {
       rootPath: z.string().describe("项目根目录路径"),
-      changeType: z.enum(['architecture', 'feature', 'bugfix', 'refactor', 'decision', 'progress', 'legacy-analysis', 'legacy-understanding', 'legacy-discovery']).describe("变更类型"),
+      changeType: z.enum(['context', 'memory', 'session', 'decision', 'progress']).describe("变更类型"),
       description: z.string().describe("变更描述"),
-      targetFile: z.enum(['productContext.md', 'activeContext.md', 'progress.md', 'decisionLog.md', 'systemPatterns.md']).optional().describe("目标文件（可选，将根据changeType自动选择）")
+      targetFile: z.enum(['PROJECT_CONTEXT.md', 'DEVELOPMENT_MEMORY.md', 'WORK_SESSION.md']).optional().describe("目标文件（可选，将根据changeType自动选择）")
     },
     async ({ rootPath, changeType, description, targetFile }) => {
       try {
-        const contextDir = path.join(rootPath, 'context-docs');
+        const contextDir = path.join(rootPath, 'context-doc');
         await fs.mkdir(contextDir, { recursive: true });
 
         // 根据变更类型确定目标文件
         let fileToUpdate = targetFile;
         if (!fileToUpdate) {
           switch (changeType) {
-            case 'architecture':
-              fileToUpdate = 'productContext.md';
+            case 'context':
+              fileToUpdate = 'PROJECT_CONTEXT.md';
               break;
-            case 'feature':
-              fileToUpdate = 'activeContext.md';
+            case 'memory':
+              fileToUpdate = 'DEVELOPMENT_MEMORY.md';
               break;
-            case 'bugfix':
-              fileToUpdate = 'activeContext.md';
-              break;
-            case 'refactor':
-              fileToUpdate = 'systemPatterns.md';
+            case 'session':
+              fileToUpdate = 'WORK_SESSION.md';
               break;
             case 'decision':
-              fileToUpdate = 'decisionLog.md';
+              fileToUpdate = 'DEVELOPMENT_MEMORY.md';
               break;
             case 'progress':
-              fileToUpdate = 'progress.md';
-              break;
-            case 'legacy-analysis':
-              fileToUpdate = 'productContext.md';
-              break;
-            case 'legacy-understanding':
-              fileToUpdate = 'activeContext.md';
-              break;
-            case 'legacy-discovery':
-              fileToUpdate = 'systemPatterns.md';
+              fileToUpdate = 'WORK_SESSION.md';
               break;
           }
         }
@@ -153,15 +188,15 @@ export function registerCoreTools(server: McpServer) {
   // 工具3: 初始化上下文工程管理结构
   server.tool(
     "init-context-engineering",
-    `初始化context-docs目录和核心文件
-创建完整的上下文工程管理文件结构`,
+    `初始化context-doc目录和核心文件
+创建上下文工程管理文件结构`,
     {
       rootPath: z.string().describe("项目根目录路径"),
       force: z.boolean().default(false).describe("是否强制重新初始化（覆盖现有文件）")
     },
     async ({ rootPath, force }) => {
       try {
-        const contextDir = path.join(rootPath, 'context-docs');
+        const contextDir = path.join(rootPath, 'context-doc');
         await fs.mkdir(contextDir, { recursive: true });
 
         const templates = getContextEngineeringTemplates();
@@ -183,7 +218,7 @@ export function registerCoreTools(server: McpServer) {
             // 文件不存在，可以创建
           }
 
-          await fs.writeFile(filePath, content);
+          await fs.writeFile(filePath, content as string);
           createdFiles.push(filename);
         }
 
@@ -200,7 +235,8 @@ export function registerCoreTools(server: McpServer) {
 
         result += `## 📋 文件说明\n`;
         for (const [filename, info] of Object.entries(guide)) {
-          result += `### ${filename}\n**作用**: ${info.role}\n**优先级**: ${info.priority}\n\n`;
+          const fileInfo = info as { role: string; priority: string };
+          result += `### ${filename}\n**作用**: ${fileInfo.role}\n**优先级**: ${fileInfo.priority}\n\n`;
         }
 
         return {
@@ -225,34 +261,19 @@ export function registerCoreTools(server: McpServer) {
 // 辅助函数：智能section定位和内容插入
 function getTargetSectionForChange(changeType: string, targetFile: string): { section: string; insertStyle: 'append' | 'prepend' } {
   const sectionMap: Record<string, Record<string, { section: string; insertStyle: 'append' | 'prepend' }>> = {
-    'productContext.md': {
-      'architecture': { section: '## 整体架构', insertStyle: 'append' },
-      'feature': { section: '## 关键功能', insertStyle: 'append' },
-      'legacy-analysis': { section: '## 存量项目分析 (LEGACY_PROJECT_ANALYSIS)', insertStyle: 'append' },
-      'default': { section: '## 项目目标', insertStyle: 'append' }
+    'PROJECT_CONTEXT.md': {
+      'context': { section: '## 项目概览', insertStyle: 'append' },
+      'default': { section: '## 项目概览', insertStyle: 'append' }
     },
-    'activeContext.md': {
-      'feature': { section: '## 当前关注点', insertStyle: 'prepend' },
-      'bugfix': { section: '## 最近变更', insertStyle: 'prepend' },
-      'progress': { section: '## 最近变更', insertStyle: 'prepend' },
-      'legacy-understanding': { section: '## 存量项目理解进度 (KNOWLEDGE_RECONSTRUCTION)', insertStyle: 'append' },
-      'default': { section: '## 当前关注点', insertStyle: 'prepend' }
+    'DEVELOPMENT_MEMORY.md': {
+      'memory': { section: '## 技术决策记录', insertStyle: 'append' },
+      'decision': { section: '## 技术决策记录', insertStyle: 'append' },
+      'default': { section: '## 技术决策记录', insertStyle: 'append' }
     },
-    'progress.md': {
-      'progress': { section: '## 当前任务', insertStyle: 'append' },
-      'feature': { section: '## 当前任务', insertStyle: 'append' },
-      'default': { section: '## 当前任务', insertStyle: 'append' }
-    },
-    'decisionLog.md': {
-      'decision': { section: '## 决策', insertStyle: 'append' },
-      'architecture': { section: '## 决策', insertStyle: 'append' },
-      'default': { section: '## 决策', insertStyle: 'append' }
-    },
-    'systemPatterns.md': {
-      'refactor': { section: '## 编码模式', insertStyle: 'append' },
-      'architecture': { section: '## 架构模式', insertStyle: 'append' },
-      'legacy-discovery': { section: '## 存量项目考古发现 (ARCHAEOLOGICAL_FINDINGS)', insertStyle: 'append' },
-      'default': { section: '## 编码模式', insertStyle: 'append' }
+    'WORK_SESSION.md': {
+      'session': { section: '## 当前任务', insertStyle: 'prepend' },
+      'progress': { section: '## 进展状态', insertStyle: 'append' },
+      'default': { section: '## 当前任务', insertStyle: 'prepend' }
     }
   };
 
@@ -267,23 +288,29 @@ function formatContentForSection(content: string, changeType: string, targetFile
   
   // 根据文件类型格式化内容
   switch (targetFile) {
-    case 'decisionLog.md':
-      // 决策日志需要结构化格式
+    case 'DEVELOPMENT_MEMORY.md':
+      // 开发记忆文件需要结构化格式
       return `### ${timestamp} - ${changeType}
 
-**决策内容**：
+**内容**：
 ${content}
 
-**时间**：${timestamp}
+**记录时间**：${timestamp}
 `;
 
-    case 'progress.md':
-      // 进度文件使用任务列表格式
-      const lines = content.split('\n').filter(line => line.trim());
-      const taskItems = lines.map(line => line.startsWith('- ') ? line : `- ${line}`).join('\n');
-      return `${taskItems}
+    case 'WORK_SESSION.md':
+      // 工作会话文件使用任务列表格式
+      if (changeType === 'progress') {
+        const lines = content.split('\n').filter(line => line.trim());
+        const taskItems = lines.map(line => line.startsWith('- ') ? line : `- ${line}`).join('\n');
+        return `${taskItems}
 
 *更新时间：${timestamp}*
+`;
+      }
+      return `### ${timestamp} - ${changeType}
+
+${content}
 `;
 
     default:
