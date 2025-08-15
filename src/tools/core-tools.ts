@@ -103,7 +103,7 @@ export function registerCoreTools(server: McpServer) {
 
   // 工具2: 更新上下文工程管理文件
   server.tool(
-    "update-context-engineering",
+    "update-context-info",
     `更新指定的上下文工程管理文件
 根据变更类型和描述更新相应的上下文文件`,
     {
@@ -187,7 +187,7 @@ export function registerCoreTools(server: McpServer) {
 
   // 工具3: 初始化上下文工程管理结构
   server.tool(
-    "init-context-engineering",
+    "init-context-info",
     `初始化context-doc目录和核心文件
 创建上下文工程管理文件结构`,
     {

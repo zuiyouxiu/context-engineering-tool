@@ -89,7 +89,7 @@ export function registerCoreTools(server) {
         }
     });
     // 工具2: 更新上下文工程管理文件
-    server.tool("update-context-engineering", `更新指定的上下文工程管理文件
+    server.tool("update-context-info", `更新指定的上下文工程管理文件
 根据变更类型和描述更新相应的上下文文件`, {
         rootPath: z.string().describe("项目根目录路径"),
         changeType: z.enum(['context', 'memory', 'session', 'decision', 'progress']).describe("变更类型"),
@@ -162,7 +162,7 @@ export function registerCoreTools(server) {
         }
     });
     // 工具3: 初始化上下文工程管理结构
-    server.tool("init-context-engineering", `初始化context-doc目录和核心文件
+    server.tool("init-context-info", `初始化context-doc目录和核心文件
 创建上下文工程管理文件结构`, {
         rootPath: z.string().describe("项目根目录路径"),
         force: z.boolean().default(false).describe("是否强制重新初始化（覆盖现有文件）")

@@ -34,8 +34,8 @@ async function main() {
     console.error('');
     console.error('🔧 上下文管理工具：');
     console.error('   📖  get-context-info - 读取项目上下文信息');
-    console.error('   ✏️   update-context-engineering - 更新上下文文件');
-    console.error('   🆕  init-context-engineering - 初始化结构');
+    console.error('   ✏️   update-context-info - 更新上下文文件');
+    console.error('   🆕  init-context-info - 初始化结构');
     console.error('');
     console.error('📡 传输方式: stdio');
     console.error('📦 版本: v4.0.0');
