@@ -565,12 +565,13 @@ export function registerCoreTools(server: McpServer) {
   // 工具2: 更新上下文工程管理文件
   server.tool(
     "update-context-info",
-    `记录项目相关信息到对应文档中。当有新的项目信息、技术决策或工作进展需要保存时使用。
-适用场景：实现新功能后记录、做出技术决策后记录、完成任务后更新进展、发现重要信息时记录`,
+    `完整替换对应文档的内容。用于更新或完善项目信息、技术决策或工作进展。
+注意：此工具会完全替换目标文件内容，不是追加模式。适合提供完整的文档内容进行更新。
+适用场景：完善项目文档、更新技术规范、重写API文档、整理项目信息`,
     {
       rootPath: z.string().describe("项目的根目录绝对路径，例如：/Users/name/my-project 或 C:\\projects\\my-app"),
       changeType: z.enum(['context', 'memory', 'session']).describe("信息类型 - context：项目基本信息/架构/功能描述；memory：编码规范/设计模式/技术标准；session：API接口/使用说明/接口文档"),
-      content: z.string().describe("要记录的具体内容，应该详细且有价值，例如：'实现了用户认证模块，使用JWT token，支持邮箱和手机号登录'")
+      content: z.string().describe("完整的文档内容，将完全替换目标文件。应该提供完整的Markdown文档，包含所有必要的章节和信息")
     },
     async ({ rootPath, changeType, content }) => {
       try {
@@ -592,18 +593,15 @@ export function registerCoreTools(server: McpServer) {
           existingContent = (templates as any)[targetFile] || '';
         }
 
-        // 格式化内容
-        const formattedContent = formatContentForSection(content, changeType, targetFile);
-        
-        // 简单追加到文件末尾
-        const updatedContent = existingContent + '\n\n' + formattedContent;
+        // 直接使用用户提供的内容替换文件内容
+        const updatedContent = content;
 
         await fs.writeFile(filePath, updatedContent);
 
         return {
           content: [{
             type: "text",
-            text: `✅ 已更新 ${targetFile}：\n\n${formattedContent.substring(0, 200)}${formattedContent.length > 200 ? '...' : ''}`
+            text: `✅ 已更新 ${targetFile}：\n\n${content.substring(0, 200)}${content.length > 200 ? '...' : ''}`
           }]
         };
 
