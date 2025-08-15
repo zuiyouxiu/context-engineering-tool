@@ -54,9 +54,9 @@ const getDetailedFileGuide = () => ({
  */
 export function registerCoreTools(server) {
     // 工具1: 获取完整项目上下文信息
-    server.tool("get-context-info", `读取并返回所有上下文工程管理文件内容
-提供项目完整上下文信息用于AI理解项目状态`, {
-        rootPath: z.string().describe("项目根目录路径")
+    server.tool("get-context-info", `获取项目的完整上下文信息，包括项目概览、技术决策记录和当前工作状态。
+适用场景：了解项目、分析代码、制定计划、回答项目相关问题时调用`, {
+        rootPath: z.string().describe("项目的根目录绝对路径，例如：/Users/name/my-project 或 C:\\projects\\my-app")
     }, async ({ rootPath }) => {
         try {
             const contextDir = path.join(rootPath, 'context-docs');
@@ -89,38 +89,18 @@ export function registerCoreTools(server) {
         }
     });
     // 工具2: 更新上下文工程管理文件
-    server.tool("update-context-info", `更新指定的上下文工程管理文件
-根据变更类型和描述更新相应的上下文文件`, {
-        rootPath: z.string().describe("项目根目录路径"),
-        changeType: z.enum(['context', 'memory', 'session', 'decision', 'progress']).describe("变更类型"),
-        description: z.string().describe("变更描述"),
-        targetFile: z.enum(['PROJECT_CONTEXT.md', 'DEVELOPMENT_MEMORY.md', 'WORK_SESSION.md']).optional().describe("目标文件（可选，将根据changeType自动选择）")
-    }, async ({ rootPath, changeType, description, targetFile }) => {
+    server.tool("update-context-info", `记录项目相关信息到对应文档中。当有新的项目信息、技术决策或工作进展需要保存时使用。
+适用场景：实现新功能后记录、做出技术决策后记录、完成任务后更新进展、发现重要信息时记录`, {
+        rootPath: z.string().describe("项目的根目录绝对路径，例如：/Users/name/my-project 或 C:\\projects\\my-app"),
+        changeType: z.enum(['context', 'memory', 'session']).describe("信息类型 - context：项目基本信息/架构/功能描述；memory：技术决策/解决方案/经验教训；session：当前任务/进展状态/工作计划"),
+        content: z.string().describe("要记录的具体内容，应该详细且有价值，例如：'实现了用户认证模块，使用JWT token，支持邮箱和手机号登录'")
+    }, async ({ rootPath, changeType, content }) => {
         try {
             const contextDir = path.join(rootPath, 'context-docs');
             await fs.mkdir(contextDir, { recursive: true });
-            // 根据变更类型确定目标文件
-            let fileToUpdate = targetFile;
-            if (!fileToUpdate) {
-                switch (changeType) {
-                    case 'context':
-                        fileToUpdate = 'PROJECT_CONTEXT.md';
-                        break;
-                    case 'memory':
-                        fileToUpdate = 'DEVELOPMENT_MEMORY.md';
-                        break;
-                    case 'session':
-                        fileToUpdate = 'WORK_SESSION.md';
-                        break;
-                    case 'decision':
-                        fileToUpdate = 'DEVELOPMENT_MEMORY.md';
-                        break;
-                    case 'progress':
-                        fileToUpdate = 'WORK_SESSION.md';
-                        break;
-                }
-            }
-            const filePath = path.join(contextDir, fileToUpdate);
+            // 根据changeType选择目标文件
+            const targetFile = getTargetFileByChangeType(changeType);
+            const filePath = path.join(contextDir, targetFile);
             const timestamp = formatTimestamp();
             // 读取现有内容
             let existingContent = '';
@@ -130,25 +110,17 @@ export function registerCoreTools(server) {
             catch {
                 // 文件不存在，使用模板
                 const templates = getContextEngineeringTemplates();
-                existingContent = templates[fileToUpdate] || '';
+                existingContent = templates[targetFile] || '';
             }
-            // 智能插入内容
-            const { section, insertStyle } = getTargetSectionForChange(changeType, fileToUpdate);
-            const formattedContent = formatContentForSection(description, changeType, fileToUpdate);
-            let updatedContent;
-            if (section && existingContent.includes(section)) {
-                // 插入到指定section
-                updatedContent = insertContentIntoSection(existingContent, section, formattedContent, insertStyle);
-            }
-            else {
-                // 如果没有找到section，追加到末尾（向后兼容）
-                updatedContent = existingContent + '\n\n' + formattedContent;
-            }
+            // 格式化内容
+            const formattedContent = formatContentForSection(content, changeType, targetFile);
+            // 简单追加到文件末尾
+            const updatedContent = existingContent + '\n\n' + formattedContent;
             await fs.writeFile(filePath, updatedContent);
             return {
                 content: [{
                         type: "text",
-                        text: `✅ 已更新 ${fileToUpdate}${section ? ` (${section})` : ''}：\n\n${formattedContent.substring(0, 200)}${formattedContent.length > 200 ? '...' : ''}`
+                        text: `✅ 已更新 ${targetFile}：\n\n${formattedContent.substring(0, 200)}${formattedContent.length > 200 ? '...' : ''}`
                     }]
             };
         }
@@ -162,9 +134,9 @@ export function registerCoreTools(server) {
         }
     });
     // 工具3: 初始化上下文工程管理结构
-    server.tool("init-context-info", `初始化context-docs目录和核心文件
-创建上下文工程管理文件结构`, {
-        rootPath: z.string().describe("项目根目录路径")
+    server.tool("init-context-info", `为项目创建上下文管理文件结构。仅在项目缺少上下文文档时使用，会创建项目信息、技术记录和工作进展文件。
+适用场景：新项目开始时、发现项目没有上下文文档时、需要规范项目信息管理时调用`, {
+        rootPath: z.string().describe("项目的根目录绝对路径，将在此目录下创建 context-docs 文件夹")
     }, async ({ rootPath }) => {
         try {
             const contextDir = path.join(rootPath, 'context-docs');
@@ -313,5 +285,18 @@ function insertContentIntoSection(existingContent, targetSection, newContent, in
         updatedSection = sectionContent.concat(['', newContent]);
     }
     return beforeSection.concat(updatedSection).concat([''], afterSection).join('\n');
+}
+// 根据changeType选择目标文件
+function getTargetFileByChangeType(changeType) {
+    switch (changeType) {
+        case 'context':
+            return 'PROJECT_CONTEXT.md';
+        case 'memory':
+            return 'DEVELOPMENT_MEMORY.md';
+        case 'session':
+            return 'WORK_SESSION.md';
+        default:
+            return 'PROJECT_CONTEXT.md';
+    }
 }
 //# sourceMappingURL=core-tools.js.map

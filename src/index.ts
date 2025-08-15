@@ -13,7 +13,7 @@ import { registerCoreTools } from './tools/core-tools.js';
 const server = new McpServer({
   name: "context-engineering-tool", 
   version: "4.0.0",
-  description: "上下文工程管理MCP服务器 - 专注于context-docs文件管理：读取上下文、更新文件、初始化结构"
+  description: "项目上下文管理工具：维护项目信息、技术决策记录和工作进展。当需要了解项目状态、记录重要信息或管理项目文档时使用"
 });
 
 // 注册上下文管理工具
@@ -30,17 +30,17 @@ async function main() {
     
     // 在stderr输出启动信息，避免干扰stdio通信
     console.error('');
-    console.error('📁 ========== 上下文工程管理 MCP 服务器 (stdio) ========== 📁');
+    console.error('📁 ========== 项目上下文管理 MCP 服务器 (stdio) ========== 📁');
     console.error('');
-    console.error('🔧 上下文管理工具：');
-    console.error('   📖  get-context-info - 读取项目上下文信息');
-    console.error('   ✏️   update-context-info - 更新上下文文件');
-    console.error('   🆕  init-context-info - 初始化结构');
+    console.error('🔧 AI可调用的工具：');
+    console.error('   📖  get-context-info    - 获取项目完整上下文信息');
+    console.error('   ✏️   update-context-info - 记录项目信息/决策/进展');
+    console.error('   🆕  init-context-info   - 初始化项目上下文文件结构');
     console.error('');
     console.error('📡 传输方式: stdio');
     console.error('📦 版本: v4.0.0');
     console.error('');
-    console.error('🎯 专注于：context-docs 目录文件管理');
+    console.error('🎯 自动识别时机：了解项目、记录信息、管理文档');
     console.error('================================================== 🚀');
     console.error('');
     
