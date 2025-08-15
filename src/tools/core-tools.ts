@@ -68,7 +68,7 @@ export function registerCoreTools(server: McpServer) {
     },
     async ({ rootPath }) => {
       try {
-        const contextDir = path.join(rootPath, 'context-doc');
+        const contextDir = path.join(rootPath, 'context-docs');
         const files = ['PROJECT_CONTEXT.md', 'DEVELOPMENT_MEMORY.md', 'WORK_SESSION.md'];
         
         let contextInfo = `# 项目上下文信息\n\n`;
@@ -114,7 +114,7 @@ export function registerCoreTools(server: McpServer) {
     },
     async ({ rootPath, changeType, description, targetFile }) => {
       try {
-        const contextDir = path.join(rootPath, 'context-doc');
+        const contextDir = path.join(rootPath, 'context-docs');
         await fs.mkdir(contextDir, { recursive: true });
 
         // 根据变更类型确定目标文件
@@ -188,15 +188,14 @@ export function registerCoreTools(server: McpServer) {
   // 工具3: 初始化上下文工程管理结构
   server.tool(
     "init-context-info",
-    `初始化context-doc目录和核心文件
+    `初始化context-docs目录和核心文件
 创建上下文工程管理文件结构`,
     {
-      rootPath: z.string().describe("项目根目录路径"),
-      force: z.boolean().default(false).describe("是否强制重新初始化（覆盖现有文件）")
+      rootPath: z.string().describe("项目根目录路径")
     },
-    async ({ rootPath, force }) => {
+    async ({ rootPath }) => {
       try {
-        const contextDir = path.join(rootPath, 'context-doc');
+        const contextDir = path.join(rootPath, 'context-docs');
         await fs.mkdir(contextDir, { recursive: true });
 
         const templates = getContextEngineeringTemplates();
@@ -210,10 +209,9 @@ export function registerCoreTools(server: McpServer) {
           // 检查文件是否存在
           try {
             await fs.access(filePath);
-            if (!force) {
-              existingFiles.push(filename);
-              continue;
-            }
+            // 文件已存在，跳过创建
+            existingFiles.push(filename);
+            continue;
           } catch {
             // 文件不存在，可以创建
           }
@@ -230,7 +228,6 @@ export function registerCoreTools(server: McpServer) {
 
         if (existingFiles.length > 0) {
           result += `## ℹ️ 已存在文件（未覆盖）\n${existingFiles.map(f => `- ${f}`).join('\n')}\n\n`;
-          result += `使用 force: true 参数可强制覆盖现有文件。\n\n`;
         }
 
         result += `## 📋 文件说明\n`;
